@@ -21,6 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Incidencias"></activity>
+        <activity android:name=".AjustesActivity"></activity>
+        <activity android:name=".CrearIncidenciaActivity"></activity>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 

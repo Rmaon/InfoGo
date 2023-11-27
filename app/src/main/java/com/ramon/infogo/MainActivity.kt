@@ -78,24 +78,37 @@ class MainActivity : AppCompatActivity() {
         binding.btnGoogle.setOnClickListener {
             loginEnGoogle()
         }
+        binding.prueba.setOnClickListener{
+            cambiarAActividadPrincipal()
+        }
     }
 
     private fun signIn(email: String, password: String) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    Log.e(TAG, "Inicio de sesión exitoso.")
-                    // Al iniciar sesión exitosamente, obtener información adicional del usuario desde Firebase
-                    val user = auth.currentUser
-                    user?.let {
-                        obtenerInformacionUsuario(it.uid)
+        if (isValidEmail(email)) {
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        Log.e(TAG, "Inicio de sesión exitoso.")
+                        // Al iniciar sesión exitosamente, obtener información adicional del usuario desde Firebase
+                        val user = auth.currentUser
+                        user?.let {
+                            obtenerInformacionUsuario(it.uid)
+                        }
+                    } else {
+                        showCustomErrorDialog("Usuario no registrado o contraseña incorrecta")
+                        Log.e(TAG, "Error en el inicio de sesión: ${task.exception?.message}")
                     }
-                } else {
-                    showCustomErrorDialog("Usuario no registrado")
-                    Log.e(TAG, "Error en el inicio de sesión: ${task.exception?.message}")
                 }
-            }
+        } else {
+            showCustomErrorDialog("Ingrese una dirección de correo electrónico válida")
+        }
     }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailRegex = "^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.{1,})"
+        return email.matches(emailRegex.toRegex())
+    }
+
 
     private fun loginEnGoogle() {
         // Este método es nuestro.
@@ -197,9 +210,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun cambiarAActividadPrincipal() {
-        val intent = Intent(this, MenuActivity::class.java)
-        startActivity(intent)
-        finish() // Opcional, dependiendo de si deseas cerrar la actividad actual
+        try {
+            val intent = Intent(this, Incidencias::class.java)
+            startActivity(intent)
+            finish() // Agrega esta línea para cerrar la actividad actual
+        } catch (e: Exception) {
+            Log.e(TAG, "Excepción al cambiar a la actividad principal: ${e.message}")
+            e.printStackTrace()
+        }
     }
 
     private fun showRegisterDialog() {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="profile_images">
+        <item>img1</item>
+        <item>img2</item>
+        <item>img3</item>
+    </string-array>
+    <string name="choose_profile_image">Selecciona una imagen de perfil</string>
+</resources>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/editTitulo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Título"
+        android:padding="16dp"/>
+
+    <EditText
+        android:id="@+id/editTipo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTitulo"
+        android:layout_marginTop="16dp"
+        android:hint="Tipo"
+        android:padding="16dp"/>
+
+    <EditText
+        android:id="@+id/editDescripcion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTipo"
+        android:layout_marginTop="16dp"
+        android:hint="Descripción"
+        android:padding="16dp"/>
+
+    <Button
+        android:id="@+id/btnCrearIncidencia"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editDescripcion"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
+        android:text="Crear Incidencia"/>
+</RelativeLayout>
