@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/emailEditTextDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Correo electrónico"
+        android:inputType="textEmailAddress" />
+
+    <EditText
+        android:id="@+id/usernameEditTextDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:layout_marginBottom="16dp"
+        android:hint="Nombre de usuario"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/passwordEditTextDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Contraseña"
+        android:inputType="textPassword" />
+
+    <EditText
+        android:id="@+id/confirmPasswordEditTextDialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Contraseña"
+        android:inputType="textPassword" />
+
+</LinearLayout>

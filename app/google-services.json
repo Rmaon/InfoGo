@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "492729311738",
+    "project_id": "infogo-rmaon",
+    "storage_bucket": "infogo-rmaon.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492729311738:android:87f89cfc4852e052728443",
+        "android_client_info": {
+          "package_name": "com.ramon.infogo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "492729311738-sa33idm8j42va2rkvre771g903240olq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.ramon.infogo",
+            "certificate_hash": "3dc7c826bc24aed6988f9bfe59cc2287ee3cf4be"
+          }
+        },
+        {
+          "client_id": "492729311738-290tutur6sc5megm9qofhfno9f8islci.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLQrgWojMvhPu5yYxfJE4JgUcG8jP1VF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "492729311738-290tutur6sc5megm9qofhfno9f8islci.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
