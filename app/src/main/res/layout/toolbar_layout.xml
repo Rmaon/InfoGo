@@ -37,17 +37,6 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <Spinner
-            android:id="@+id/spinner_options"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_gravity="end"
-            android:minHeight="48dp"
-            android:popupBackground="?attr/colorPrimary"
-            android:textColor="?android:textColorPrimary" />
-
     </RelativeLayout>
 
 </androidx.appcompat.widget.Toolbar>
