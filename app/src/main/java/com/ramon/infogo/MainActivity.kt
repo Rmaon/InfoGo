@@ -87,9 +87,6 @@ class MainActivity : AppCompatActivity() {
         binding.btnGoogle.setOnClickListener {
             loginEnGoogle()
         }
-        binding.prueba.setOnClickListener{
-            cambiarAActividadPrincipal()
-        }
     }
 
     private fun signIn(email: String, password: String) {
