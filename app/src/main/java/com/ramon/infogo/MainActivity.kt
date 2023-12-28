@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
     // Con este launcher, abro la ventana que me lleva a la validación de Google.
     private val launcherVentanaGoogle =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            // Si la ventana va bien, se accede a las propiedades que trae la propia ventana q llamamos y recogemos en result.
+            // Si la ventana va bien, se accede a las propiedades que trae la propia ventana que llamamos y recogemos en result.
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 manejarResultados(task)
@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun cambiarAActividadPrincipal() {
         try {
-            val intent = Intent(this, Incidencias::class.java)
+            val intent = Intent(this, MainSlider::class.java)
             startActivity(intent)
             finish() // Agrega esta línea para cerrar la actividad actual
         } catch (e: Exception) {
@@ -238,33 +238,75 @@ class MainActivity : AppCompatActivity() {
             dialogView.findViewById(R.id.confirmPasswordEditTextDialog) as EditText
         val usernameEditText = dialogView.findViewById(R.id.usernameEditTextDialog) as EditText
 
-        builder.setPositiveButton("Registrar") { dialog, _ ->
-            val email = emailEditText.text.toString()
-            val password = passwordEditText.text.toString()
-            val confirmPassword = confirmPasswordEditText.text.toString()
-            val username = usernameEditText.text.toString()
+        val dialog = builder.setPositiveButton("Registrar", null)
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
 
-            if (email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() && username.isNotEmpty()) {
-                if (password == confirmPassword) {
-                    // Contraseñas coinciden, proceder con el registro
-                    register(email, password, username)
+        // Agrega el TextWatcher a los campos de contraseña y confirmación de contraseña
+        val textWatcher = object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+            override fun afterTextChanged(s: Editable?) {
+                // Verifica si las contraseñas son iguales y cumplen con los requisitos
+                val password = passwordEditText.text.toString()
+                val confirmPassword = confirmPasswordEditText.text.toString()
+
+                if (password == confirmPassword && isPasswordSecure(password)) {
+                    // Habilita el botón de registro si las contraseñas son iguales y seguras
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
                 } else {
-                    // Contraseñas no coinciden, mostrar mensaje de error
-                    showCustomErrorDialog("Las contraseñas no coinciden. Por favor, inténtalo de nuevo.")
+                    // Deshabilita el botón de registro si las contraseñas no son iguales o no son seguras
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
                 }
-            } else {
-                // Mostrar mensaje de error si algún campo está vacío
-                showCustomErrorDialog("Por favor, completa todos los campos.")
             }
         }
 
-        builder.setNegativeButton("Cancelar") { dialog, _ ->
-            dialog.dismiss()
+        passwordEditText.addTextChangedListener(textWatcher)
+        confirmPasswordEditText.addTextChangedListener(textWatcher)
+
+        // Establece el OnClickListener personalizado para el botón positivo
+        dialog.setOnShowListener {
+            val positiveButton = (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val email = emailEditText.text.toString()
+                val password = passwordEditText.text.toString()
+                val confirmPassword = confirmPasswordEditText.text.toString()
+                val username = usernameEditText.text.toString()
+
+                if (email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() && username.isNotEmpty()) {
+                    if (password == confirmPassword) {
+                        // Contraseñas coinciden, proceder con el registro
+                        register(email, password, username)
+                        dialog.dismiss()
+                    } else {
+                        // Contraseñas no coinciden, mostrar mensaje de error
+                        showCustomErrorDialog("Las contraseñas no coinciden. Por favor, inténtalo de nuevo.")
+                    }
+                } else {
+                    // Mostrar mensaje de error si algún campo está vacío
+                    showCustomErrorDialog("Por favor, completa todos los campos.")
+                }
+            }
         }
 
-        val dialog = builder.create()
         dialog.show()
     }
+
+    private fun isPasswordSecure(password: String): Boolean {
+        // Verifica que la contraseña tenga al menos 8 caracteres
+        val hasMinimumLength = password.length >= 8
+
+        // Verifica que la contraseña contenga al menos un número
+        val hasDigit = password.any { it.isDigit() }
+
+        // Combina las dos reglas: longitud mínima y al menos un número
+        return hasMinimumLength && hasDigit
+    }
+
 
     private fun register(email: String, password: String, username: String) {
         auth.createUserWithEmailAndPassword(email, password)
