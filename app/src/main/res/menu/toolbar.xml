@@ -1,0 +1,19 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_crear_incidencia"
+        android:title="Crear Incidencia"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_ver_incidencias"
+        android:title="Ver Incidencias"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_ajustes"
+        android:title="Ajustes"
+        app:showAsAction="never" />
+
+</menu>
