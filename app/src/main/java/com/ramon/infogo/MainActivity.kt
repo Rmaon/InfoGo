@@ -256,7 +256,9 @@ class MainActivity : AppCompatActivity() {
                     if (document.exists()) {
                         val usuario = document.toObject(Usuario::class.java)
                         usuario?.let {
-                            UsuarioSingleton.usuario = it
+                            // Cuando el usuario inicia sesión correctamente
+                            val currentUser = auth.currentUser
+                            UsuarioSingleton.uid = currentUser?.uid
                             cambiarAActividadPrincipal()
                         }
                     } else {
@@ -271,6 +273,7 @@ class MainActivity : AppCompatActivity() {
             e.printStackTrace()
         }
     }
+
 
     private fun guardarUsuarioEnFirestore(userId: String, email: String, password: String, username: String) {
         try {
