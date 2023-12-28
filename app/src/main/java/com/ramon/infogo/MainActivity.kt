@@ -37,23 +37,17 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Inicializa Firebase Auth
         auth = FirebaseAuth.getInstance()
 
-        binding.btnLogin.setOnClickListener {
-            val email = binding.emailEditText.text.toString()
-            val password = binding.passwordEditText.text.toString()
-
-            if (email.isNotEmpty() && password.isNotEmpty()) {
-                signIn(email, password)
-            } else {
-                showCustomErrorDialog("Ingrese un correo electrónico y una contraseña.")
-            }
+        // Verificar si ya hay una sesión iniciada
+        if (auth.currentUser != null) {
+            cambiarAActividadPrincipal()
+            finish()  // Cerrar esta actividad para evitar volver atrás
         }
 
         binding.emailEditText.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                // Muestra passwordEditText solo si emailEditText tiene texto
+                // Mostrar passwordEditText solo si emailEditText tiene texto
                 if (s.isNullOrEmpty()) {
                     binding.passwordEditText.visibility = View.INVISIBLE
                     binding.btnLogin.visibility = View.INVISIBLE
@@ -63,13 +57,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // No es necesario implementar este método
-            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // No es necesario implementar este método
-            }
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -77,8 +67,13 @@ class MainActivity : AppCompatActivity() {
             .requestEmail()
             .build()
 
-        googleSignInClient = GoogleSignIn.getClient(this,gso)
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
+        binding.btnLogin.setOnClickListener {
+            val email = binding.emailEditText.text.toString()
+            val password = binding.passwordEditText.text.toString()
+            signIn(email, password)
+        }
 
         binding.btnRegister.setOnClickListener {
             showRegisterDialog()
@@ -95,11 +90,7 @@ class MainActivity : AppCompatActivity() {
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
                         Log.e(TAG, "Inicio de sesión exitoso.")
-                        // Al iniciar sesión exitosamente, obtener información adicional del usuario desde Firebase
-                        val user = auth.currentUser
-                        user?.let {
-                            obtenerInformacionUsuario(it.uid)
-                        }
+                        obtenerInformacionUsuario(auth.currentUser?.uid ?: "")
                     } else {
                         showCustomErrorDialog("Usuario no registrado o contraseña incorrecta")
                         Log.e(TAG, "Error en el inicio de sesión: ${task.exception?.message}")
@@ -115,24 +106,19 @@ class MainActivity : AppCompatActivity() {
         return email.matches(emailRegex.toRegex())
     }
 
-
     private fun loginEnGoogle() {
-        // Este método es nuestro.
         val signInClient = googleSignInClient.signInIntent
         launcherVentanaGoogle.launch(signInClient)
     }
 
-    // Con este launcher, abro la ventana que me lleva a la validación de Google.
     private val launcherVentanaGoogle =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            // Si la ventana va bien, se accede a las propiedades que trae la propia ventana que llamamos y recogemos en result.
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 manejarResultados(task)
             }
         }
 
-    // Es como una muñeca rusa, vamos desgranando, de la ventana a task y de task a los datos concretos que me da google.
     private fun manejarResultados(task: Task<GoogleSignInAccount>) {
         if (task.isSuccessful) {
             val account: GoogleSignInAccount? = task.result
@@ -144,13 +130,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Esta función actualiza o repinta la interfaz de usuario UI.
     private fun actualizarUI(account: GoogleSignInAccount) {
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-        // Pido un token, y con ese token, si todo va bien obtengo la info.
         auth.signInWithCredential(credential).addOnCompleteListener {
             if (it.isSuccessful) {
-                // Realizar acciones después de iniciar sesión con Google
                 cambiarAActividadPrincipal()
             } else {
                 Toast.makeText(this, it.exception.toString(), Toast.LENGTH_SHORT).show()
@@ -158,72 +141,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun obtenerInformacionUsuario(userId: String) {
-        try {
-            // Obtener la referencia a Firestore
-            val db = FirebaseFirestore.getInstance()
-
-            // Obtener la referencia al documento del usuario en Firestore
-            val userRef: DocumentReference = db.collection("users").document(userId)
-
-            userRef.get().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val document = task.result
-                    if (document.exists()) {
-                        // El usuario ya tiene información en Firestore
-                        val usuario = document.toObject(Usuario::class.java)
-                        usuario?.let {
-                            // Almacenar la información del usuario en el Singleton
-                            UsuarioSingleton.usuario = it
-                            // Cambiar a otra actividad después de iniciar sesión
-                            cambiarAActividadPrincipal()
-                        }
-                    } else {
-                        // No hay información del usuario en Firestore
-                        Log.e(TAG, "No se encontró información del usuario en Firestore.")
-                    }
-                } else {
-                    // Error al obtener información del usuario en Firestore
-                    Log.e(TAG, "Error al obtener información del usuario en Firestore: ${task.exception?.message}")
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Excepción al obtener información del usuario: ${e.message}")
-            e.printStackTrace()
-        }
-    }
-
-    private fun guardarUsuarioEnFirestore(userId: String, email: String, password: String, username: String) {
-        try {
-            val db = FirebaseFirestore.getInstance()
-            val usersRef = db.collection("users").document(userId)
-
-            // Crear un objeto de Usuario con la información necesaria
-            val usuario = Usuario(email = email, password = password, username = username)
-
-            // Guardar el usuario en Firestore
-            usersRef.set(usuario)
-                .addOnSuccessListener {
-                    Log.e(TAG, "Usuario guardado en Firestore con éxito.")
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Error al guardar usuario en Firestore: ${e.message}")
-                }
-        } catch (e: Exception) {
-            Log.e(TAG, "Excepción al guardar usuario en Firestore: ${e.message}")
-            e.printStackTrace()
-        }
-    }
-
     private fun cambiarAActividadPrincipal() {
-        try {
-            val intent = Intent(this, MainSlider::class.java)
-            startActivity(intent)
-            finish() // Agrega esta línea para cerrar la actividad actual
-        } catch (e: Exception) {
-            Log.e(TAG, "Excepción al cambiar a la actividad principal: ${e.message}")
-            e.printStackTrace()
-        }
+        val intent = Intent(this, MainSlider::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun showRegisterDialog() {
@@ -244,22 +165,18 @@ class MainActivity : AppCompatActivity() {
             }
             .create()
 
-        // Agrega el TextWatcher a los campos de contraseña y confirmación de contraseña
         val textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable?) {
-                // Verifica si las contraseñas son iguales y cumplen con los requisitos
                 val password = passwordEditText.text.toString()
                 val confirmPassword = confirmPasswordEditText.text.toString()
 
                 if (password == confirmPassword && isPasswordSecure(password)) {
-                    // Habilita el botón de registro si las contraseñas son iguales y seguras
                     dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
                 } else {
-                    // Deshabilita el botón de registro si las contraseñas no son iguales o no son seguras
                     dialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
                 }
             }
@@ -268,7 +185,6 @@ class MainActivity : AppCompatActivity() {
         passwordEditText.addTextChangedListener(textWatcher)
         confirmPasswordEditText.addTextChangedListener(textWatcher)
 
-        // Establece el OnClickListener personalizado para el botón positivo
         dialog.setOnShowListener {
             val positiveButton = (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
@@ -279,15 +195,12 @@ class MainActivity : AppCompatActivity() {
 
                 if (email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty() && username.isNotEmpty()) {
                     if (password == confirmPassword) {
-                        // Contraseñas coinciden, proceder con el registro
                         register(email, password, username)
                         dialog.dismiss()
                     } else {
-                        // Contraseñas no coinciden, mostrar mensaje de error
                         showCustomErrorDialog("Las contraseñas no coinciden. Por favor, inténtalo de nuevo.")
                     }
                 } else {
-                    // Mostrar mensaje de error si algún campo está vacío
                     showCustomErrorDialog("Por favor, completa todos los campos.")
                 }
             }
@@ -297,22 +210,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isPasswordSecure(password: String): Boolean {
-        // Verifica que la contraseña tenga al menos 8 caracteres
         val hasMinimumLength = password.length >= 8
-
-        // Verifica que la contraseña contenga al menos un número
         val hasDigit = password.any { it.isDigit() }
-
-        // Combina las dos reglas: longitud mínima y al menos un número
         return hasMinimumLength && hasDigit
     }
-
 
     private fun register(email: String, password: String, username: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Registro exitoso, ahora guardar en Firestore
                     val userId = auth.currentUser?.uid ?: ""
                     guardarUsuarioEnFirestore(userId, email, password, username)
                     Log.e(TAG, "Registro exitoso.")
@@ -337,5 +243,51 @@ class MainActivity : AppCompatActivity() {
 
         val dialog = builder.create()
         dialog.show()
+    }
+
+    private fun obtenerInformacionUsuario(userId: String) {
+        try {
+            val db = FirebaseFirestore.getInstance()
+            val userRef: DocumentReference = db.collection("users").document(userId)
+
+            userRef.get().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val document = task.result
+                    if (document.exists()) {
+                        val usuario = document.toObject(Usuario::class.java)
+                        usuario?.let {
+                            UsuarioSingleton.usuario = it
+                            cambiarAActividadPrincipal()
+                        }
+                    } else {
+                        Log.e(TAG, "No se encontró información del usuario en Firestore.")
+                    }
+                } else {
+                    Log.e(TAG, "Error al obtener información del usuario en Firestore: ${task.exception?.message}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Excepción al obtener información del usuario: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    private fun guardarUsuarioEnFirestore(userId: String, email: String, password: String, username: String) {
+        try {
+            val db = FirebaseFirestore.getInstance()
+            val usersRef = db.collection("users").document(userId)
+            val usuario = Usuario(email = email, password = password, username = username)
+
+            usersRef.set(usuario)
+                .addOnSuccessListener {
+                    Log.e(TAG, "Usuario guardado en Firestore con éxito.")
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error al guardar usuario en Firestore: ${e.message}")
+                }
+        } catch (e: Exception) {
+            Log.e(TAG, "Excepción al guardar usuario en Firestore: ${e.message}")
+            e.printStackTrace()
+        }
     }
 }
