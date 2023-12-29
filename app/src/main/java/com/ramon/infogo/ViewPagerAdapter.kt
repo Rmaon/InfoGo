@@ -1,12 +1,8 @@
 package com.ramon.infogo
 
-import android.app.Activity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import com.ramon.infogo.CrearIncidenciaFragment
-import com.ramon.infogo.IncidenciaListFragment
-import com.ramon.infogo.SettingsFragment
 
 
 class ViewPagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
